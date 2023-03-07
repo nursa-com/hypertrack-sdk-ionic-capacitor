@@ -14,7 +14,7 @@ For information about how to get started with Ionic Capacitor HyperTrack SDK, pl
 
 ## Installation
 
-[Install from NPM](https://www.npmjs.com/package/hypertrack-sdk-ionic-capacitor)
+`npm install hypertrack-sdk-ionic-capacitor`
 
 ### Android
 In order to use this plugin, please add HyperTrack repository in `android/build.gradle`:
