@@ -1,7 +1,6 @@
-
 # Ionic Capacitor HyperTrack SDK
 
-[![GitHub](https://img.shields.io/github/license/hypertrack/sdk-ionic-capacitor?color=orange)](./LICENSE)
+[![GitHub](https://img.shields.io/github/license/hypertrack/sdk-ionic-capacitor.svg?color=orange)](./LICENSE)
 ![npm](https://img.shields.io/npm/v/hypertrack-sdk-ionic-capacitor.svg) 
 ![iOS SDK](https://img.shields.io/badge/iOS%20SDK-4.16.1-brightgreen.svg) 
 ![Android SDK](https://img.shields.io/badge/Android%20SDK-6.4.2-brightgreen.svg)
