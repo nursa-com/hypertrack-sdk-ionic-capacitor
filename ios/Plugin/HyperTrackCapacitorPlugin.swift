@@ -1,31 +1,41 @@
-import Foundation
 import Capacitor
+import Foundation
 import HyperTrack
 
+/// HyperTrack Capacitor Plugin
+///
+/// The HypertrackSdkIonicCapacitor is a Swift module name to access HyperTrackSDKWrapper
+/// methods.
 @objc(HyperTrackCapacitorPlugin)
 public class HyperTrackCapacitorPlugin: CAPPlugin {
-    
-    private let eventTracking = "onTrackingChanged"
-    private let eventAvailability = "onAvailabilityChanged"
-    private let eventErrors = "onError"
-    
-    private var isTrackingSubscription: HyperTrack.Cancellable!
-    private var availabilitySubscription: HyperTrack.Cancellable!
+    private let eventErrors = "errors"
+    private let eventIsTracking = "isTracking"
+    private let eventIsAvailable = "isAvailable"
+    private let eventLocate = "locate"
+    private let eventLocation = "location"
+
     private var errorsSubscription: HyperTrack.Cancellable!
-    
-    @objc func initialize(_ call: CAPPluginCall) {
+    private var isTrackingSubscription: HyperTrack.Cancellable!
+    private var isAvailableSubscription: HyperTrack.Cancellable!
+    private var locationSubscription: HyperTrack.Cancellable!
+
+    private var locateSubscription: HyperTrack.Cancellable? = nil
+
+    override required init(bridge: CAPBridgeProtocol, pluginId: String, pluginName: String) {
+        super.init(bridge: bridge, pluginId: pluginId, pluginName: pluginName)
+        initListeners()
+    }
+
+    @objc func addGeotag(_ call: CAPPluginCall) {
         sendAsPromise(
-            HypertrackSdkIonicCapacitor.initializeSDK(
-                call.options as! Dictionary<String, Any>
-            ).map({ (result:SuccessResult) in
-                initListeners()
-                return result
-            }),
-            method: .initialize,
+            HypertrackSdkIonicCapacitor.addGeotag(
+                call.options as! [String: Any]
+            ),
+            method: .addGeotag,
             call
         )
     }
-    
+
     @objc func getDeviceId(_ call: CAPPluginCall) {
         sendAsPromise(
             HypertrackSdkIonicCapacitor.getDeviceID(),
@@ -33,7 +43,40 @@ public class HyperTrackCapacitorPlugin: CAPPlugin {
             call
         )
     }
-    
+
+    @objc func getErrors(_ call: CAPPluginCall) {
+        sendAsPromise(
+            HypertrackSdkIonicCapacitor.getErrors().map { errors in
+                switch errors {
+                case .void:
+                    preconditionFailure("Unexpected void result")
+                case let .dict(value):
+                    preconditionFailure("Unexpected dict result: \(value)")
+                case let .array(errors):
+                    return .dict(serializeErrorsForPlugin(errors as! [[String: Any]]))
+                }
+            },
+            method: .getErrors,
+            call
+        )
+    }
+
+    @objc func getIsAvailable(_ call: CAPPluginCall) {
+        sendAsPromise(
+            HypertrackSdkIonicCapacitor.getIsAvailable(),
+            method: .getIsAvailable,
+            call
+        )
+    }
+
+    @objc func getIsTracking(_ call: CAPPluginCall) {
+        sendAsPromise(
+            HypertrackSdkIonicCapacitor.getIsTracking(),
+            method: .getIsTracking,
+            call
+        )
+    }
+
     @objc func getLocation(_ call: CAPPluginCall) {
         sendAsPromise(
             HypertrackSdkIonicCapacitor.getLocation(),
@@ -41,126 +84,124 @@ public class HyperTrackCapacitorPlugin: CAPPlugin {
             call
         )
     }
-    
-    @objc func startTracking(_ call: CAPPluginCall) {
+
+    @objc func getMetadata(_ call: CAPPluginCall) {
         sendAsPromise(
-            HypertrackSdkIonicCapacitor.startTracking(),
-            method: .startTracking,
+            HypertrackSdkIonicCapacitor.getMetadata(),
+            method: .getMetadata,
             call
         )
     }
-    
-    @objc func stopTracking(_ call: CAPPluginCall) {
+
+    @objc func getName(_ call: CAPPluginCall) {
         sendAsPromise(
-            HypertrackSdkIonicCapacitor.stopTracking(),
-            method: .stopTracking,
+            HypertrackSdkIonicCapacitor.getName(),
+            method: .getName,
             call
         )
     }
-    
-    @objc func setAvailability(_ call: CAPPluginCall) {
+
+    @objc func setIsAvailable(_ call: CAPPluginCall) {
         sendAsPromise(
-            HypertrackSdkIonicCapacitor.setAvailability(
-                call.options as! Dictionary<String, Any>
+            HypertrackSdkIonicCapacitor.setIsAvailable(
+                call.options as! [String: Any]
             ),
-            method: .setAvailability,
+            method: .setIsAvailable,
             call
         )
     }
-    
-    @objc func setName(_ call: CAPPluginCall) {
+
+    @objc func setIsTracking(_ call: CAPPluginCall) {
         sendAsPromise(
-            HypertrackSdkIonicCapacitor.setName(
-                call.options as! Dictionary<String, Any>
+            HypertrackSdkIonicCapacitor.setIsTracking(
+                call.options as! [String: Any]
             ),
-            method: .setName,
+            method: .setIsTracking,
             call
         )
     }
-    
+
     @objc func setMetadata(_ call: CAPPluginCall) {
         sendAsPromise(
             HypertrackSdkIonicCapacitor.setMetadata(
-                call.options as! Dictionary<String, Any>
+                call.options as! [String: Any]
             ),
             method: .setMetadata,
             call
         )
     }
-    
-    @objc func isTracking(_ call: CAPPluginCall) {
+
+    @objc func setName(_ call: CAPPluginCall) {
         sendAsPromise(
-            HypertrackSdkIonicCapacitor.isTracking(),
-            method: .isTracking,
-            call
-        )
-    }
-    
-    @objc func isAvailable(_ call: CAPPluginCall) {
-        sendAsPromise(
-            HypertrackSdkIonicCapacitor.isAvailable(),
-            method: .isAvailable,
-            call
-        )
-    }
-    
-    @objc func addGeotag(_ call: CAPPluginCall) {
-        sendAsPromise(
-            HypertrackSdkIonicCapacitor.addGeotag(
-                call.options as! Dictionary<String, Any>
+            HypertrackSdkIonicCapacitor.setName(
+                call.options as! [String: Any]
             ),
-            method: .addGeotag,
+            method: .setName,
             call
         )
     }
-    
-    @objc func sync(_ call: CAPPluginCall) {
-        sendAsPromise(
-            HypertrackSdkIonicCapacitor.sync(),
-            method: .sync,
-            call
-        )
+
+    @objc func onSubscribedToErrors(_: CAPPluginCall) {
+        sendErrorsEvent(HyperTrack.errors)
     }
-    
-    @objc func onSubscribedToTracking(_ call: CAPPluginCall) {
-        sendTrackingEvent(isTracking: sdkInstance.isTracking)
+
+    @objc func onSubscribedToIsTracking(_: CAPPluginCall) {
+        sendIsTrackingEvent(isTracking: HyperTrack.isTracking)
     }
-    
-    @objc func onSubscribedToAvailability(_ call: CAPPluginCall) {
-        sendAvailabilityEvent(availability: sdkInstance.availability)
+
+    @objc func onSubscribedToIsAvailable(_: CAPPluginCall) {
+        sendIsAvailableEvent(isAvailable: HyperTrack.isAvailable)
     }
-    
-    @objc func onSubscribedToErrors(_ call: CAPPluginCall) {
-        sendErrorsEvent(sdkInstance.errors)
-    }
-    
-    private func initListeners() {
-        isTrackingSubscription = sdkInstance.subscribeToIsTracking(callback: { isTracking in
-            self.sendTrackingEvent(isTracking: isTracking)
-        })
-        availabilitySubscription = sdkInstance.subscribeToAvailability(callback: { availability in
-            self.sendAvailabilityEvent(availability: availability)
-        })
-        errorsSubscription = sdkInstance.subscribeToErrors { errors in
-            self.sendErrorsEvent(errors)
+
+    @objc func onSubscribedToLocate(_: CAPPluginCall) {
+        locateSubscription?.cancel()
+        locateSubscription = HyperTrack.locate { locateResult in
+            self.sendLocateEvent(locateResult)
         }
     }
-    
-    private func sendTrackingEvent(isTracking: Bool) {
-        notifyListeners(eventTracking, data: serializeIsTracking(isTracking))
+
+    @objc func onSubscribedToLocation(_: CAPPluginCall) {
+        sendLocationEvent(HyperTrack.location)
     }
-    private func sendAvailabilityEvent(availability: HyperTrack.Availability) {
-        notifyListeners(eventAvailability, data: serializeIsAvailable(availability))
+
+    private func initListeners() {
+        errorsSubscription = HyperTrack.subscribeToErrors { errors in
+            self.sendErrorsEvent(errors)
+        }
+        isAvailableSubscription = HyperTrack.subscribeToIsAvailable { isAvailable in
+            self.sendIsAvailableEvent(isAvailable: isAvailable)
+        }
+        isTrackingSubscription = HyperTrack.subscribeToIsTracking { isTracking in
+            self.sendIsTrackingEvent(isTracking: isTracking)
+        }
+        locationSubscription = HyperTrack.subscribeToLocation { location in
+            self.sendLocationEvent(location)
+        }
     }
-    
-    private func sendErrorsEvent(_ errors: Set<HyperTrack.HyperTrackError>) {
+
+    private func sendErrorsEvent(_ errors: Set<HyperTrack.Error>) {
         notifyListeners(eventErrors, data: serializeErrorsForPlugin(serializeErrors(errors)))
     }
-                                            
-    private func serializeErrorsForPlugin(_ errors: Array<Dictionary<String, Any>>) -> Dictionary<String, Any> {
+
+    private func sendIsAvailableEvent(isAvailable: Bool) {
+        notifyListeners(eventIsAvailable, data: serializeIsAvailable(isAvailable))
+    }
+
+    private func sendIsTrackingEvent(isTracking: Bool) {
+        notifyListeners(eventIsTracking, data: serializeIsTracking(isTracking))
+    }
+
+    private func sendLocateEvent(_ locateResult: Result<HyperTrack.Location, Set<HyperTrack.Error>>) {
+        notifyListeners(eventLocate, data: serializeLocateResult(locateResult))
+    }
+
+    private func sendLocationEvent(_ locationResult: Result<HyperTrack.Location, HyperTrack.Location.Error>) {
+        notifyListeners(eventLocation, data: serializeLocationResult(locationResult))
+    }
+
+    private func serializeErrorsForPlugin(_ errors: [[String: Any]]) -> [String: Any] {
         return ["errors": errors]
     }
-    
 }
 
 private func sendAsPromise(
@@ -169,22 +210,24 @@ private func sendAsPromise(
     _ call: CAPPluginCall
 ) {
     switch result {
-    case .success(let success):
-        switch (success) {
+    case let .success(success):
+        switch success {
         case .void:
             call.resolve([:])
-        case .dict(let value):
+        case let .dict(value):
             call.resolve(value)
+        case .array:
+            preconditionFailure("Arrays params are not supported in Capacitor")
         }
-    case .failure(let failure):
-        switch(failure) {
-        case .error(let message):
+    case let .failure(failure):
+        switch failure {
+        case let .error(message):
             call.reject(
                 "\(method.rawValue): \(message)",
                 nil,
                 nil
             )
-        case .fatalError(let message):
+        case let .fatalError(message):
             preconditionFailure(message)
         }
     }

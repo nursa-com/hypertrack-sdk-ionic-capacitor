@@ -1,9 +1,14 @@
-import { SdkInitParams } from './data_types/SdkInitParams';
 import HyperTrack from './HyperTrack';
 export default HyperTrack;
 export { HyperTrack };
-export { SdkInitParams };
+
 export { HyperTrackError } from './data_types/HyperTrackError';
-export { LocationError, NotRunning, Starting, Errors } from './data_types/LocationError';
+export {
+  NotRunning,
+  Starting,
+} from './data_types/internal/LocationErrorInternal';
+export { LocationError, Errors } from './data_types/LocationError';
+export { LocationWithDeviation } from './data_types/LocationWithDeviation';
 export { Location } from './data_types/Location';
-export { Subscription } from './definitions'
+export { Result, Success, Failure } from './data_types/Result';
+export { Subscription } from './Subscription';
