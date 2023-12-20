@@ -7,7 +7,7 @@ ext {
 
 buildscript {
     ext.kotlin_version = "1.7.21"
-    ext.hypertrack_sdk_version = "7.0.9"
+    ext.hypertrack_sdk_version = "7.0.11"
     ext.firebase_messaging_version = "23.1.1"
 
     repositories {
@@ -24,6 +24,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    namespace "com.hypertrack.sdk.capacitor"
     compileSdkVersion project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 30
     defaultConfig {
         minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 21
