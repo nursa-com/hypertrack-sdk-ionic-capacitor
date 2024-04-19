@@ -7,7 +7,7 @@ ext {
 
 buildscript {
     ext.kotlin_version = "1.7.21"
-    ext.hypertrack_sdk_version = "7.4.3"
+    ext.hypertrack_sdk_version = "7.5.2"
     ext.firebase_messaging_version = "23.1.1"
 
     repositories {
@@ -45,6 +45,9 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
     }
 }
 
