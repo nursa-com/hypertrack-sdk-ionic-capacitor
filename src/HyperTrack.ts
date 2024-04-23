@@ -13,6 +13,7 @@ import type { Result } from './data_types/Result';
 import type { LocationInternal } from './data_types/internal/LocationInternal';
 import type { LocationWithDeviationInternal } from './data_types/internal/LocationWithDeviationInternal';
 import type { Metadata } from './data_types/internal/Metadata';
+import type { OrderHandle } from './data_types/internal/OrderHandle';
 import { registerPlugin } from '@capacitor/core';
 import { Subscription } from './Subscription';
 import { Errors, HyperTrackCapacitorPlugin } from './HyperTrackCapacitorPlugin';
@@ -93,7 +94,10 @@ export default class HyperTrack {
       // addGeotag(orderHandle: string, orderStatus: OrderStatus, data: Object)
       return hyperTrackPlugin
         .addGeotag({
-          orderHandle: args[0],
+          orderHandle: {
+            type: 'orderHandle',
+            value: args[0],
+          } as OrderHandle,
           orderStatus: args[1],
           data: args[2],
           expectedLocation: undefined,
@@ -112,7 +116,10 @@ export default class HyperTrack {
       // addGeotag(orderHandle: string, orderStatus: OrderStatus, data: Object, expectedLocation: Location)
       return hyperTrackPlugin
         .addGeotag({
-          orderHandle: args[0],
+          orderHandle: {
+            type: 'orderHandle',
+            value: args[0],
+          } as OrderHandle,
           orderStatus: args[1],
           data: args[2],
           expectedLocation: {
