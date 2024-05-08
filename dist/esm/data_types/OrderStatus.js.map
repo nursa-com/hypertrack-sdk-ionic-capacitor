@@ -1,0 +1,1 @@
+{"version":3,"file":"OrderStatus.js","sourceRoot":"","sources":["../../../src/data_types/OrderStatus.ts"],"names":[],"mappings":"","sourcesContent":["export type OrderStatus =\n  | {\n      type: 'orderStatusClockIn';\n    }\n  | {\n      type: 'orderStatusClockOut';\n    }\n  | {\n      type: 'orderStatusCustom';\n      value: string;\n    };\n"]}
