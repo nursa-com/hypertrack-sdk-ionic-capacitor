@@ -39,7 +39,7 @@
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
     "swiftlint": "node-swiftlint",
     "docgen": "typedoc --options typedoc.json",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && npm run docgen && rollup -c rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build"
