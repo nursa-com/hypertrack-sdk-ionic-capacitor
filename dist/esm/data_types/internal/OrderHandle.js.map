@@ -1,0 +1,1 @@
+{"version":3,"file":"OrderHandle.js","sourceRoot":"","sources":["../../../../src/data_types/internal/OrderHandle.ts"],"names":[],"mappings":"","sourcesContent":["export type OrderHandle = {\n  type: 'orderHandle';\n  value: string;\n};\n"]}
