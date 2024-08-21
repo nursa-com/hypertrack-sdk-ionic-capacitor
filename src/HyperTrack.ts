@@ -16,15 +16,19 @@ import type { Metadata } from './data_types/internal/Metadata';
 import type { OrderHandle } from './data_types/internal/OrderHandle';
 import type { WorkerHandle } from './data_types/internal/WorkerHandle';
 import { registerPlugin } from '@capacitor/core';
-import { Subscription } from './Subscription';
-import { Errors, HyperTrackCapacitorPlugin } from './HyperTrackCapacitorPlugin';
-import { OrderStatus } from './data_types/OrderStatus';
+import type { Subscription } from './Subscription';
+import type { Errors, HyperTrackCapacitorPlugin } from './HyperTrackCapacitorPlugin';
+import type { OrderStatus } from './data_types/OrderStatus';
+import type { Order } from './data_types/Order';
+import type { OrdersInternal } from './data_types/internal/OrdersInternal';
+import type { OrderInternal } from './data_types/internal/OrderInternal';
 
 export const EVENT_ERRORS = 'errors';
 export const EVENT_IS_AVAILABLE = 'isAvailable';
 export const EVENT_IS_TRACKING = 'isTracking';
 export const EVENT_LOCATE = 'locate';
 export const EVENT_LOCATION = 'location';
+export const EVENT_ORDERS = 'orders';
 
 const hyperTrackPlugin = registerPlugin<HyperTrackCapacitorPlugin>('HyperTrackCapacitorPlugin', {
   // web: () => import('./web').then(m => new m.HyperTrackSdkWeb()),
@@ -34,7 +38,7 @@ export default class HyperTrack {
   private static locateSubscription: Subscription | undefined;
 
   /**
-   * Adds a new geotag
+   * Adds a new geotag. Check [Shift tracking](https://hypertrack.com/docs/shift-tracking) and [Clock In/Out tagging](https://hypertrack.com/docs/clock-inout-tracking) docs to learn how to use Order handle and Order status params.
    *
    * @param {string} orderHandle - Order handle
    * @param {OrderStatus} orderStatus - Order status
@@ -48,7 +52,7 @@ export default class HyperTrack {
   ): Promise<Result<Location, LocationError>>;
 
   /**
-   * Adds a new geotag with expected location
+   * Adds a new geotag with expected location. Check [Shift tracking](https://hypertrack.com/docs/shift-tracking) and [Clock In/Out tagging](https://hypertrack.com/docs/clock-inout-tracking) docs to learn how to use Order handle and Order status params.
    *
    * @param {string} orderHandle - Order handle
    * @param {OrderStatus} orderStatus - Order status
@@ -232,6 +236,15 @@ export default class HyperTrack {
   static async getName(): Promise<string> {
     return hyperTrackPlugin.getName().then((name: Name) => {
       return this.deserializeName(name);
+    });
+  }
+
+  /**
+   * Orders assigned to the worker
+   */
+  static async getOrders(): Promise<Map<string, Order>> {
+    return hyperTrackPlugin.getOrders().then((orders: OrdersInternal) => {
+      return this.deserializeOrders(orders);
     });
   }
 
@@ -448,6 +461,29 @@ export default class HyperTrack {
     return result;
   }
 
+  /**
+   * Subscribe to changes in the orders assigned to the worker
+   *
+   * @param listener
+   * @returns Subscription
+   * @example
+   * ```js
+   * const subscription = HyperTrack.subscribeToOrders(orders => {
+   *   ...
+   * })
+   *
+   * // later, to stop listening
+   * subscription.remove()
+   * ```
+   */
+  static subscribeToOrders(listener: (orders: Map<string, Order>) => void): Subscription {
+    const result = hyperTrackPlugin.addListener(EVENT_ORDERS, (orders: OrdersInternal) => {
+      listener(this.deserializeOrders(orders));
+    });
+    hyperTrackPlugin.onSubscribedToOrders();
+    return result;
+  }
+
   /** @ignore */
   private static deserializeHyperTrackErrors(errors: HyperTrackErrorInternal[]): HyperTrackError[] {
     let res = errors.map((error: HyperTrackErrorInternal) => {
@@ -459,6 +495,24 @@ export default class HyperTrack {
       ) as HyperTrackError;
     });
     return res;
+  }
+
+  /** @ignore */
+  private static deserializeIsInsideGeofence(
+    isInsideGeofence: Result<boolean, LocationErrorInternal>,
+  ): Result<boolean, LocationError> {
+    switch (isInsideGeofence.type) {
+      case 'success':
+        return {
+          type: 'success',
+          value: isInsideGeofence.value,
+        };
+      case 'failure':
+        return {
+          type: 'failure',
+          value: this.deserializeLocationError(isInsideGeofence.value),
+        };
+    }
   }
 
   /** @ignore */
@@ -549,6 +603,26 @@ export default class HyperTrack {
       throw new Error(`Invalid name: ${JSON.stringify(name)}`);
     }
     return name.value;
+  }
+
+  /** @ignore */
+  private static deserializeOrders(orders: OrdersInternal): Map<string, Order> {
+    if (orders.type !== 'orders') {
+      throw new Error(`Invalid orders: ${JSON.stringify(orders)}`);
+    }
+    let result = new Map<string, Order>();
+    Object.entries(orders.value)
+      .map(([_, value]: [string, OrderInternal]) => {
+        return value;
+      })
+      .sort((first: OrderInternal, second: OrderInternal) => first.index - second.index)
+      .forEach((orderInternal: OrderInternal) => {
+        result.set(orderInternal.orderHandle, {
+          orderHandle: orderInternal.orderHandle,
+          isInsideGeofence: this.deserializeIsInsideGeofence(orderInternal.isInsideGeofence),
+        } as Order);
+      });
+    return result;
   }
 
   /** @ignore */
