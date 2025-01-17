@@ -1,4 +1,5 @@
 import { HyperTrackError } from './data_types/HyperTrackError';
+import type { AllowMockLocation } from './data_types/internal/AllowMockLocation';
 import type { IsAvailable } from './data_types/internal/IsAvailable';
 import type { IsTracking } from './data_types/internal/IsTracking';
 import type { Location } from './data_types/Location';
@@ -172,6 +173,17 @@ export default class HyperTrack {
   }
 
   /**
+   * If disallowed, the HyperTrack platform will display and outage if mocked location is detected.
+   *
+   * @param {boolean} true if mock location is allowed
+   */
+  static async getAllowMockLocation(): Promise<boolean> {
+    return hyperTrackPlugin.getAllowMockLocation().then((allowMockLocation: AllowMockLocation) => {
+      return this.deserializeAllowMockLocation(allowMockLocation);
+    });
+  }
+
+  /**
    * Returns a string that is used to uniquely identify the device
    *
    * @returns {string} Device ID
@@ -296,6 +308,23 @@ export default class HyperTrack {
     hyperTrackPlugin.onSubscribedToLocate();
     return this.locateSubscription;
   }
+  
+  /**
+   * Allows mocking location data. 
+   * 
+   * Check the [Test with mock locations](https://hypertrack.com/docs/mock-location) guide for more information.
+   * 
+   * To avoid issues related to race conditions in your code use this API **only if** modifying the compiled `HyperTrackAllowMockLocation` AndroidManifest.xml/Info.plist value is insufficient for your needs.
+   * Example: if for some reason you aren't able to recompile with `HyperTrackAllowMockLocation` set to `YES`/`true` for your prod app QA mock location tests and need to set up the value in runtime.
+   * 
+   * @param true if mock location is allowed
+   */
+  static async setAllowMockLocation(allow: boolean): Promise<void> {
+    hyperTrackPlugin.setAllowMockLocation({
+      type: 'allowMockLocation',
+      value: allow,
+    } as AllowMockLocation);
+  } 
 
   /**
    * Sets the availability of the device for the Nearby search
@@ -483,6 +512,14 @@ export default class HyperTrack {
     });
     hyperTrackPlugin.onSubscribedToOrders();
     return result;
+  }
+
+  /** @ignore */
+  private static deserializeAllowMockLocation(allowMockLocation: AllowMockLocation): boolean {
+    if (allowMockLocation.type !== 'allowMockLocation') {
+      throw new Error(`Invalid allowMockLocation: ${JSON.stringify(allowMockLocation)}`);
+    }
+    return allowMockLocation.value;
   }
 
   /** @ignore */
