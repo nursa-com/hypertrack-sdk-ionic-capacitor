@@ -657,11 +657,23 @@ export default class HyperTrack {
       .map(([_, value]: [string, OrderInternal]) => {
         return value;
       })
-      .sort((first: OrderInternal, second: OrderInternal) => first.index - second.index)
+      .sort((first: OrderInternal, second: OrderInternal) => { 
+        if(first.index === undefined || second.index === undefined) {
+          throw new Error(`Invalid order index: ${JSON.stringify(first)} ${JSON.stringify(second)}`);
+        }
+        return first.index - second.index
+      })
       .forEach((orderInternal: OrderInternal) => {
         result.set(orderInternal.orderHandle, {
           orderHandle: orderInternal.orderHandle,
-          isInsideGeofence: this.deserializeIsInsideGeofence(orderInternal.isInsideGeofence),
+          isInsideGeofence: async () => {
+            const isInsideGeofence = await hyperTrackPlugin
+              .getOrderIsInsideGeofence({
+                type: 'orderHandle',
+                value: orderInternal.orderHandle,
+              });
+            return this.deserializeIsInsideGeofence(isInsideGeofence);
+          },
         } as Order);
       });
     return result;
