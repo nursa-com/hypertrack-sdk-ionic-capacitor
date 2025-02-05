@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2025-02-05
+
+### Fixed
+
+- Error on `HyperTrack.getOrders()`/`HyperTrack.subscribeToOrders()` on Android when assigning multiple orders to the worker
+
 ## [4.0.0] - 2025-02-03
 
 ### Changed
@@ -361,3 +367,4 @@ We are excited to announce the release of HyperTrack Ionic Capacitor SDK 2.0.0, 
 [3.7.1]: https://github.com/hypertrack/sdk-ionic-capacitor/releases/tag/3.7.1
 [3.8.0]: https://github.com/hypertrack/sdk-ionic-capacitor/releases/tag/3.8.0
 [4.0.0]: https://github.com/hypertrack/sdk-ionic-capacitor/releases/tag/4.0.0
+[4.0.1]: https://github.com/hypertrack/sdk-ionic-capacitor/releases/tag/4.0.1
