@@ -1,6 +1,6 @@
 {
   "name": "@nursa/capacitor-plugin-hypertrack-sdk",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "Capacitor plugin for HyperTrack generation SDKs",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
