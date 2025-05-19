@@ -25,6 +25,9 @@ apply plugin: 'kotlin-android'
 
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        jvmTarget = JavaVersion.VERSION_21
+    }
 }
 
 android {
