@@ -44,7 +44,7 @@ allprojects {
 
 ### iOS
 
-- iOS version 13.0+
+- iOS version 15.0+
 
 ## Contributing
 
