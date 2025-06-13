@@ -1,4 +1,5 @@
 import HyperTrack
+import Foundation
 
 private let keyExpectedLocation = "expectedLocation"
 private let keyGeotagData = "data"
